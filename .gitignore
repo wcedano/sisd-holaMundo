@@ -1,0 +1,8 @@
+# Salidas de la verificacion local
+build/
+resultados.json
+*.vcd
+
+# Proyecto de Gowin EDA: se regenera, no se versiona
+impl/
+*.gprj.user
