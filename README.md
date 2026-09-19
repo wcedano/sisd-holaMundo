@@ -9,14 +9,19 @@ enciende el LED, el siguiente error que veas sera tuyo y no de la instalacion.
 
 ## Probar sin la placa
 
-No hace falta la FPGA para esto:
+No hace falta la FPGA para esto. Desde esta carpeta:
 
-    verilator --lint-only -Wall --top-module top src/*.v
-    mkdir -p build
-    iverilog -g2012 -o build/sim.out src/*.v tb/tb_top.v
-    cd build && vvp sim.out
+    make lint     # Verilator: si no dice nada, esta limpio
+    make sim      # Icarus: compila y ejecuta el testbench
+    make check    # las dos cosas, con un resumen al final
+    make help     # todos los objetivos
 
-Lo que tiene que salir:
+Son los mismos nombres que usa el Makefile comun del curso, donde se invocan
+con la ruta del proyecto:
+
+    make -C 00_infra lint SRC_DIR=<ruta-del-proyecto>
+
+Lo que tiene que salir con `make sim`:
 
     [L1] caso 1: PASS  en reposo (btn_raw=1) el LED esta apagado
     [L1] caso 2: PASS  pulsado (btn_raw=0) el LED se enciende
@@ -29,8 +34,10 @@ Lo que tiene que salir:
 Si Verilator no dice nada y vvp imprime esas cinco lineas, **Verilator e
 Icarus estan bien**. Falta solo la mitad de Windows: Gowin y el driver.
 
-Ver las ondas: `gtkwave build/dump.vcd`. En Windows 11 abre solo con WSLg; en
-Windows 10 necesitas VcXsrv.
+Ver las ondas: `make wave`. En Windows 11 abre solo gracias a WSLg; en
+Windows 10 necesitas un servidor X como VcXsrv.
+
+Para borrar lo generado: `make clean`.
 
 ## Grabar en la placa
 
@@ -74,4 +81,5 @@ el mismo LED con dos nombres. Dos puertos sobre el mismo balon aborta el place
     sisd-holaMundo/
     ├── src/top.v      el modulo, combinacional puro
     ├── tb/tb_top.v    5 casos, tabla de verdad completa
-    └── top.cst        solo btn_raw y led
+    ├── top.cst        solo btn_raw y led
+    └── Makefile       lint, sim, wave, check, clean
