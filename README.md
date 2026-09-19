@@ -14,6 +14,7 @@ No hace falta la FPGA para esto. Desde esta carpeta:
     make lint     # Verilator: si no dice nada, esta limpio
     make sim      # Icarus: compila y ejecuta el testbench
     make check    # las dos cosas, con un resumen al final
+    make synth    # Gowin: bitstream en impl/pnr/top.fs
     make help     # todos los objetivos
 
 Son los mismos nombres que usa el Makefile comun del curso, donde se invocan
@@ -39,21 +40,40 @@ Windows 10 necesitas un servidor X como VcXsrv.
 
 Para borrar lo generado: `make clean`.
 
-## Grabar en la placa
+## Sintetizar y grabar
 
-En Windows, con Gowin EDA:
+Con `gw_sh` de Gowin EDA en el PATH:
 
-1. Proyecto nuevo, dispositivo **GW5A-LV25MG121NES**, serie GW5A-25.
-2. Anade `src/top.v` y `top.cst`.
-3. Synthesize, luego Place & Route.
-4. Programmer, conecta la placa y graba.
+    make synth
 
-Si el Programmer no ve la placa, el driver USB no esta: instala WinUSB en el
-puerto de depuracion con **Zadig**.
+Sale el bitstream en `impl/pnr/top.fs`, junto con los informes de recursos y
+de pines. Para otro dispositivo, sin tocar `build.tcl`:
 
-No hay `.sdc` a proposito. El diseno no tiene reloj, asi que no hay nada que
-restringir; un `create_clock` sobre un puerto que no existe es un error, no
-una precaucion.
+    GW_DEVICE="GW5A-LV25MG121NES" make synth
+
+Verificado en la placa de referencia: 1 LUT, 0 registros, 2 pines.
+
+    btn_raw -> F5    entrada
+    led     -> G11   salida
+
+Si prefieres la interfaz grafica: proyecto nuevo con dispositivo
+**GW5A-LV25MG121NC1/I0** (familia GW5A-25A), anade `src/top.v` y `top.cst`,
+Synthesize y luego Place & Route.
+
+Para grabar, abre el Programmer y conecta la placa. Si no la ve, el driver USB
+no esta: instala WinUSB en el puerto de depuracion con **Zadig**.
+
+### Dos detalles del build.tcl
+
+No hay `.sdc` a proposito: el diseno es combinacional y no tiene reloj que
+restringir. El aviso *«no habra analisis de temporizacion ni Fmax»* que sale
+al sintetizar es lo esperado, no un fallo.
+
+`build.tcl` libera los pines de doble proposito con `-use_sspi_as_gpio` y
+`-use_cpu_as_gpio`. Este ejemplo no los necesita, pero el reloj de la placa
+entra por **E2**, que tambien es SSPI_WPN: el dia que anadas `clk`, sin esas
+dos opciones el place & route aborta con un `ERROR (PR2017)` que no menciona
+la causa.
 
 ## Si el LED se comporta al reves
 
@@ -82,4 +102,5 @@ el mismo LED con dos nombres. Dos puertos sobre el mismo balon aborta el place
     ├── src/top.v      el modulo, combinacional puro
     ├── tb/tb_top.v    5 casos, tabla de verdad completa
     ├── top.cst        solo btn_raw y led
-    └── Makefile       lint, sim, wave, check, clean
+    ├── build.tcl      flujo de sintesis para gw_sh
+    └── Makefile       lint, sim, wave, check, synth, clean

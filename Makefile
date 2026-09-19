@@ -25,7 +25,7 @@ VVP       ?= vvp
 VERILATOR ?= verilator
 GTKWAVE   ?= gtkwave
 
-.PHONY: help lint sim wave check clean
+.PHONY: help lint sim wave check synth clean
 
 help:
 	@echo "Objetivos disponibles:"
@@ -33,10 +33,10 @@ help:
 	@echo "  sim    - compila y ejecuta el testbench con Icarus"
 	@echo "  wave   - abre el VCD en GTKWave"
 	@echo "  check  - lint + sim y resume los casos, como hace el CI"
+	@echo "  synth  - sintetiza con Gowin EDA (requiere gw_sh en el PATH)"
 	@echo "  clean  - borra $(BUILD)/"
 	@echo ""
-	@echo "La sintesis y el grabado se hacen desde Gowin EDA en Windows;"
-	@echo "no hay objetivo synth porque este proyecto no trae build.tcl."
+	@echo "Variables de synth:  GW_DEVICE, GW_FAMILY, GW_TOP"
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -68,5 +68,18 @@ check: | $(BUILD)
 	@echo "Dentro del repo del curso, 'make -C 00_infra check' ademas escribe"
 	@echo "resultados.json, que es el contrato que lee el tablero de notas."
 
+# Gowin EDA trae su propio Qt en IDE/lib. Si el enlazador mezcla ese con el
+# del sistema, gw_sh aborta con «Cannot mix incompatible Qt library» y vuelca
+# el core antes de leer una sola linea del .tcl. Anteponer su lib obliga a que
+# todo Qt salga de la misma instalacion. Se resuelve en tiempo de ejecucion
+# para no depender de donde tenga cada quien instalado el IDE.
+GW_LIB = $$(dirname "$$(readlink -f "$$(command -v gw_sh)")")/../lib
+
+# Verifica con lint y simulacion ANTES de llegar aqui: una sintesis tarda
+# minutos y te dice lo mismo sobre si la logica es correcta.
+synth:
+	@command -v gw_sh >/dev/null || { echo "gw_sh no esta en el PATH (Gowin EDA)"; exit 1; }
+	LD_LIBRARY_PATH="$(GW_LIB):$$LD_LIBRARY_PATH" gw_sh build.tcl
+
 clean:
-	rm -rf $(BUILD)
+	rm -rf $(BUILD) impl
