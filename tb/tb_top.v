@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1s / 1ps
 //
 // ============================================================================
 //  Testbench del hola mundo — 99-0544
@@ -19,17 +19,17 @@ module tb_top;
 
     // Placa por defecto: boton activo en bajo, LED activo en alto.
     wire led_normal;
-    top #(.BUTTON_ACTIVE_LOW(1'b1), .LED_ACTIVE_LOW(1'b0))
+    top #(.BUTTON_ACTIVE_LOW(1'b1), .LED_ACTIVE_LOW(1'b0)) // polaridades por defecto
         dut_normal (.btn_raw(btn), .led(led_normal));
 
     // Boton activo en alto: la polaridad de entrada se invierte.
     wire led_btn_alto;
-    top #(.BUTTON_ACTIVE_LOW(1'b0), .LED_ACTIVE_LOW(1'b0))
+    top #(.BUTTON_ACTIVE_LOW(1'b0), .LED_ACTIVE_LOW(1'b0)) // boton activo en alto
         dut_btn_alto (.btn_raw(btn), .led(led_btn_alto));
 
     // LED activo en bajo: la polaridad de salida se invierte.
     wire led_inv;
-    top #(.BUTTON_ACTIVE_LOW(1'b1), .LED_ACTIVE_LOW(1'b1))
+    top #(.BUTTON_ACTIVE_LOW(1'b1), .LED_ACTIVE_LOW(1'b1)) // LED activo en bajo
         dut_led_inv (.btn_raw(btn), .led(led_inv));
 
     integer fallos = 0;

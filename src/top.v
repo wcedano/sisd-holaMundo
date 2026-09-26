@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ms / 1ps
 //
 // ============================================================================
 //  Hola mundo — Tang Primer 25K (GW5A-25) + placa Dock
@@ -24,16 +24,16 @@
 //  LED_ACTIVE_LOW; no toques la logica.
 //
 module top #(
-    parameter BUTTON_ACTIVE_LOW = 1'b1,
-    parameter LED_ACTIVE_LOW    = 1'b0
+    parameter BUTTON_ACTIVE_LOW = 1'b1, // boton activo en bajo (pull-up externo)
+    parameter LED_ACTIVE_LOW    = 1'b0  // LED activo en alto (pull-down interno)
 )(
-    input  wire btn_raw,
-    output wire led
+    input  wire btn_raw, // boton de la placa, sin sincronizar
+    output wire led   //  // LED de la placa, sin sincronizar
 );
 
-    wire btn_pressed;
+    wire btn_pressed; // boton sincronizado y con polaridad ajustada a logica positiva
 
-    assign btn_pressed = BUTTON_ACTIVE_LOW ? ~btn_raw : btn_raw;
-    assign led         = LED_ACTIVE_LOW    ? ~btn_pressed : btn_pressed;
+    assign btn_pressed = BUTTON_ACTIVE_LOW ? ~btn_raw : btn_raw; // boton activo en bajo: invertir la entrada
+    assign led         = LED_ACTIVE_LOW    ? ~btn_pressed : btn_pressed; // LED activo en bajo: invertir la salida
 
 endmodule
